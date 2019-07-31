@@ -1,6 +1,7 @@
 version: '3.3'
 
 services:
+
   consul-leader:
     image: consul
     command: agent -server -client=0.0.0.0 -bootstrap -ui
@@ -14,17 +15,18 @@ services:
       - traefik-public
     deploy:
       labels:
-        - traefik.frontend.rule=Host:consul.${DOMAIN?Variable DOMAIN not set}
+        - "traefik.frontend.rule=PathPrefixStrip:/consul"
         - traefik.enable=true
         - traefik.port=8500
         - traefik.tags=${TRAEFIK_PUBLIC_TAG:-traefik-public}
         - traefik.docker.network=traefik-public
         # Traefik service that listens to HTTP
         - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        #- traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
-        - traefik.webservice.frontend.entryPoints=https
+        #- traefik.webservice.frontend.entryPoints=https
         - traefik.frontend.auth.basic.users=${USERNAME?Variable USERNAME not set}:${HASHED_PASSWORD?Variable HASHED_PASSWORD not set}
+
   consul-replica:
     image: consul
     command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
@@ -41,6 +43,7 @@ services:
       placement:
         preferences:
           - spread: node.id
+
   traefik:
     image: traefik:v1.7
     ports:
@@ -65,7 +68,7 @@ services:
         - traefik.docker.network=traefik-public
         # Traefik service that listens to HTTP
         - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        #- traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
         - traefik.frontend.auth.basic.users=${USERNAME?Variable USERNAME not set}:${HASHED_PASSWORD?Variable HASHED_PASSWORD not set}
@@ -78,17 +81,17 @@ services:
       --docker.exposedbydefault=false
       --constraints=tag==traefik-public
       --entrypoints='Name:http Address::80'
-      --entrypoints='Name:https Address::443 TLS'
+      #--entrypoints='Name:https Address::443 TLS'
       --consul
       --consul.endpoint="consul-leader:8500"
-      --acme
-      --acme.email=${EMAIL?Variable EMAIL not set}
-      --acme.storage="traefik/acme/account"
-      --acme.entryPoint=https
-      --acme.httpChallenge.entryPoint=http
-      --acme.onhostrule=true
-      --acme.acmelogging=true
-      --logLevel=INFO
+      #--acme
+      #--acme.email=${EMAIL?Variable EMAIL not set}
+      #--acme.storage="traefik/acme/account"
+      #--acme.entryPoint=https
+      #--acme.httpChallenge.entryPoint=http
+      #--acme.onhostrule=true
+      #--acme.acmelogging=true
+      --logLevel=WARN
       --accessLog
       --api
     networks:
