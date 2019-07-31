@@ -15,7 +15,7 @@ services:
       - traefik-public
     deploy:
       labels:
-        - "traefik.frontend.rule=PathPrefixStrip:/consul"
+        - traefik.frontend.rule=PathPrefixStrip:/consul
         - traefik.enable=true
         - traefik.port=8500
         - traefik.tags=${TRAEFIK_PUBLIC_TAG:-traefik-public}
@@ -61,13 +61,13 @@ services:
         preferences:
           - spread: node.id
       labels:
-        - traefik.frontend.rule=Host:traefik.${DOMAIN?Variable DOMAIN not set}
+        - traefik.frontend.rule=PathPrefixStrip:/traefik
         - traefik.enable=true
         - traefik.port=8080
         - traefik.tags=traefik-public
         - traefik.docker.network=traefik-public
         # Traefik service that listens to HTTP
-        - traefik.redirectorservice.frontend.entryPoints=http
+        #- traefik.redirectorservice.frontend.entryPoints=http
         #- traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         #- traefik.webservice.frontend.entryPoints=https
@@ -93,7 +93,7 @@ services:
       #--acme.acmelogging=true
       --logLevel=WARN
       --accessLog
-      --api
+      #--api
     networks:
       - default
       - traefik-public
